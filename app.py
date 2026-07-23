@@ -19,7 +19,8 @@ with st.form("pay_input_form"):
     with col2:
         existing_basic = st.number_input("Enter Existing Basic Pay (June 2026):", min_value=0.0, value=43720.00, format="%.2f")
         personal_allowance = st.number_input("Enter Personal Allowance:", min_value=0.0, value=1580.00, format="%.2f")
-        is_disabled = st.checkbox("Are you a Disabled Employee? (Special Conveyance)")
+        # یہاں ویلیو False کر دی گئی ہے تاکہ نارمل ملازمین کے لیے اسپیشل الاؤنس نہ آئے
+        is_disabled = st.checkbox("Are you a Disabled Employee? (Special Conveyance)", value=False)
 
     # فارم کے اندر سبمٹ بٹن
     submitted = st.form_submit_button("Calculate & Show Statement", type="primary")
@@ -251,4 +252,3 @@ st.markdown("""
         <p style='margin: 8px 0 0 0; font-size: 18px; color: #2c3e50;'><b>BY M. FARHAN IQBAL</b></p>
     </div>
 """, unsafe_allow_html=True)
-    
