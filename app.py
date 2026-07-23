@@ -39,7 +39,6 @@ else:
     conv_label = f"Conveyance Allowance (BPS {bps_grade})"
 
 house_rent = 3524.00
-special_allow_20% = 0.00
 
 # اگر کنٹریکٹ ملازم ہو تو 30% SSB الاؤنس کا حساب
 if emp_type == "Contract Employee":
@@ -137,7 +136,7 @@ st.table(df_gross)
 
 # کٹوتیاں (Deductions) الگ سے ظاہر کرنا
 income_tax = 461.00
-gp_fund = 4290.00 if emp_type == "Regular Employee" else 0.00 # کنٹریکٹ کے لیے GP Fund عام طور پر نہیں ہوتا
+gp_fund = 4290.00 if emp_type == "Regular Employee" else 0.00
 benevolent_fund = 1312.00
 group_insurance = 149.00
 total_deductions = income_tax + gp_fund + benevolent_fund + group_insurance
