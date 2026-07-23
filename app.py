@@ -4,7 +4,7 @@ import pandas as pd
 st.set_page_config(page_title="Punjab Pay & Allowances Comparison Statement", page_icon="📊", layout="wide")
 
 st.markdown("<h2 style='text-align: center;'>PAY & ALLOWANCES COMPARISON STATEMENT</h2>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'><b>Government of the Punjab - Revised Basic Pay Scales 2026</b></p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'><b>Government of the Punjab - Revised Basic Pay Scales 2026 (FBR Budget 2026-27 Compliant)</b></p>", unsafe_allow_html=True)
 
 # مین اسکرین پر فارم بنانے کے لیے st.form کا استعمال
 with st.form("pay_input_form"):
@@ -145,27 +145,58 @@ if submitted:
     df_gross = pd.DataFrame(data_gross)
     st.table(df_gross)
 
-    # کٹوتیاں (Deductions) الگ سے ظاہر کرنا
-    income_tax = 461.00
-    gp_fund = 4290.00 if emp_type == "Regular Employee" else 0.00
-    benevolent_fund = 1312.00
+    # درست کٹوتیاں (Deductions based on official Rules & FBR 2026-27 Slabs)
+    
+    # 1. Benevolent Fund (Grade 1-4: 1%, Grade 5+: 2% of basic pay)
+    if bps_grade <= 4:
+        benevolent_fund = revised_basic * 0.01
+    else:
+        benevolent_fund = revised_basic * 0.02
+
+    # 2. GP Fund (Only for regular employees, estimated standard deduction or percentage)
+    gp_fund = (revised_basic * 0.10) if emp_type == "Regular Employee" else 0.00
+    
+    # 3. Group Insurance (Fixed standard slab)
     group_insurance = 149.00
-    total_deductions = income_tax + gp_fund + benevolent_fund + group_insurance
+
+    # 4. FBR Income Tax Slabs for Salaried Individuals (Budget 2026-27)
+    annual_taxable_salary = revised_basic * 12
+    
+    if annual_taxable_salary <= 600000:
+        annual_tax = 0.0
+    elif annual_taxable_salary <= 1200000:
+        annual_tax = (annual_taxable_salary - 600000) * 0.01
+    elif annual_taxable_salary <= 2200000:
+        annual_tax = 6000 + (annual_taxable_salary - 1200000) * 0.11
+    elif annual_taxable_salary <= 3200000:
+        annual_tax = 116000 + (annual_taxable_salary - 2200000) * 0.20
+    elif annual_taxable_salary <= 4100000:
+        annual_tax = 316000 + (annual_taxable_salary - 3200000) * 0.25
+    elif annual_taxable_salary <= 5600000:
+        annual_tax = 541000 + (annual_taxable_salary - 4100000) * 0.29
+    elif annual_taxable_salary <= 7000000:
+        annual_tax = 976000 + (annual_taxable_salary - 5600000) * 0.32
+    else:
+        annual_tax = 1424000 + (annual_taxable_salary - 7000000) * 0.35
+
+    monthly_income_tax = annual_tax / 12
+
+    total_deductions = monthly_income_tax + gp_fund + benevolent_fund + group_insurance
 
     net_existing = total_existing - total_deductions
     net_revised = total_revised - total_deductions
     net_diff = net_revised - net_existing
 
     data_deductions = {
-        "Mandatory Deductions": [
-            "Income Tax",
-            "GP Fund Subscription",
-            "Benevolent Fund",
+        "Mandatory Deductions (Official Rules)": [
+            "Income Tax (FBR Budget 2026-27 Slabs)",
+            f"GP Fund Subscription ({'10% of Basic' if emp_type == 'Regular Employee' else 'N/A'})",
+            f"Benevolent Fund ({'1% (BPS 1-4)' if bps_grade <= 4 else '2% (BPS 5+)'} of Basic)",
             "Group Insurance",
             "TOTAL DEDUCTIONS"
         ],
         "Amount": [
-            f"Rs. {income_tax:,.2f}",
+            f"Rs. {monthly_income_tax:,.2f}",
             f"Rs. {gp_fund:,.2f}",
             f"Rs. {benevolent_fund:,.2f}",
             f"Rs. {group_insurance:,.2f}",
@@ -173,7 +204,7 @@ if submitted:
         ]
     }
 
-    st.subheader("2. Mandatory Deductions")
+    st.subheader("2. Mandatory Deductions (As per Rules & FBR Slabs)")
     df_deductions = pd.DataFrame(data_deductions)
     st.table(df_deductions)
 
@@ -189,7 +220,8 @@ if submitted:
     # ہائی لائٹس
     st.markdown("### Key Highlights:")
     st.markdown(f"- **Employment Type:** {emp_type} | **Grade & Stage:** BPS-{bps_grade}, Stage {stage_no}")
-    st.markdown(f"- **Disability Status:** {'Yes (Special Conveyance Rs. 10,000)' if is_disabled else 'No'}")
+    st.markdown(f"- **Benevolent Fund Rate:** {'1% (Grade 1-4)' if bps_grade <= 4 else '2% (Grade 5+)'} = Rs. {benevolent_fund:,.2f}")
+    st.markdown(f"- **FBR Monthly Income Tax:** Rs. {monthly_income_tax:,.2f}")
     st.markdown(f"- **Net Take-Home Monthly Increase:** + Rs. {net_diff:,.2f}")
 
     st.markdown("---")
