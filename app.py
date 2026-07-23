@@ -183,6 +183,20 @@ st.markdown(f"- **Net Take-Home Monthly Increase:** + Rs. {net_diff:,.2f}")
 
 st.markdown("---")
 
+# ایپ شیئرنگ اور کیو آر کوڈ سیکشن
+st.subheader("📱 Share This App with Friends & Colleagues")
+app_url = "https://salary-calculator-by-farhan.streamlit.app/"
+qr_code_url = f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={app_url}"
+
+col1, col2 = st.columns([1, 2])
+with col1:
+    st.image(qr_code_url, width=150)
+with col2:
+    st.markdown(f"Scan the QR code using any smartphone camera or click the link below to share:")
+    st.markdown(f"🔗 **Direct Link:** [{app_url}]({app_url})")
+
+st.markdown("---")
+
 # اسٹائلش پیغام
 st.markdown("""
     <div style='padding: 20px; border-radius: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
