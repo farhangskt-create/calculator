@@ -6,22 +6,24 @@ st.set_page_config(page_title="Punjab Pay & Allowances Comparison Statement", pa
 st.markdown("<h2 style='text-align: center;'>PAY & ALLOWANCES COMPARISON STATEMENT</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'><b>Government of the Punjab - Revised Basic Pay Scales 2026</b></p>", unsafe_allow_html=True)
 
-# سائیڈ بار میں صرف مطلوبہ ان پٹس (بیسک پے، گریڈ، اسٹیج اور ڈس ایبلٹی)
+# سائیڈ بار میں صرف مطلوبہ ان پٹس (بیسک پے، گریڈ، اسٹیج اور ڈس ایبلٹی) - Revised Pay ہٹا دی گئی ہے
 st.sidebar.header("Employee Pay Inputs")
 bps_grade = st.sidebar.selectbox("Select BPS Grade:", list(range(1, 23)), index=14) # ڈیفالٹ BPS-15
 stage_no = st.sidebar.number_input("Enter Stage No:", min_value=1, max_value=30, value=10)
 existing_basic = st.sidebar.number_input("Enter Existing Basic Pay (June 2026):", min_value=0.0, value=43720.00, format="%.2f")
-revised_basic = st.sidebar.number_input("Enter Revised Basic Pay (BPS-2026):", min_value=0.0, value=52530.00, format="%.2f")
 is_disabled = st.sidebar.checkbox("Are you a Disabled Employee? (Special Conveyance)")
+
+# خودکار طور پر Revised Basic Pay کا حساب
+revised_basic = existing_basic * 1.201
 
 adhoc_2022_15 = 3615.00
 adhoc_2025_10 = 4372.00
-adhoc_2026_new = revised_basic * 0.07  # نئے اسکیل کا 7%
+adhoc_2026_new = revised_basic * 0.07
 
 # کنویئنس الاؤنس کا حساب ڈس ایبلٹی کے لحاظ سے
 if is_disabled:
     special_conv_exist = 6000.00
-    special_conv_revised = 10000.00  # نوٹیفیکیشن کے مطابق 6000 سے بڑھا کر 10000
+    special_conv_revised = 10000.00
     conv_label = "Special Conveyance Allowance"
 else:
     if bps_grade <= 4:
@@ -124,11 +126,11 @@ st.markdown(f"- **Net Gross Monthly Increase:** + Rs. {diff_total:,.2f}")
 st.markdown("---")
 st.info("📌 **Note:** Actual net take-home pay will vary after mandatory deductions including Income Tax, GP Fund Subscription, Benevolent Fund, Group Insurance, and other departmental cuttings as per applicable government rules.")
 
-# آخر میں آپ کا نام اور پیغام (اسٹائلش انداز میں)
+# آخر میں آپ کا مطلوبہ اسٹائلش پیغام
 st.markdown("---")
 st.markdown("""
-    <div style='padding: 15px; border-radius: 10px; background-color: #f0f2f6; text-align: center;'>
-        <h3 style='color: #1f77b4; margin: 0; font-family: sans-serif;'>✨ Wish you best of luck! ✨</h3>
-        <p style='margin: 5px 0 0 0; font-size: 16px; color: #31333F;'><b>— By M. Farhan</b></p>
+    <div style='padding: 20px; border-radius: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
+        <h2 style='color: #1f77b4; margin: 0; font-family: sans-serif; letter-spacing: 1px;'>✨ BEST OF LUCK ✨</h2>
+        <p style='margin: 8px 0 0 0; font-size: 18px; color: #2c3e50;'><b>BY M. FARHAN IQBAL</b></p>
     </div>
 """, unsafe_allow_html=True)
