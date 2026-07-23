@@ -8,12 +8,14 @@ st.markdown("<p style='text-align: center;'><b>Government of the Punjab - Revise
 
 # سائیڈ بار ان پٹس
 st.sidebar.header("Employee Pay Inputs")
+emp_type = st.sidebar.selectbox("Employment Type:", ["Regular Employee", "Contract Employee"])
 bps_grade = st.sidebar.selectbox("Select BPS Grade:", list(range(1, 23)), index=14) # ڈیفالٹ BPS-15
 stage_no = st.sidebar.number_input("Enter Stage No:", min_value=1, max_value=30, value=10)
 existing_basic = st.sidebar.number_input("Enter Existing Basic Pay (June 2026):", min_value=0.0, value=43720.00, format="%.2f")
+personal_allowance = st.sidebar.number_input("Enter Personal Allowance:", min_value=0.0, value=1580.00, format="%.2f")
 is_disabled = st.sidebar.checkbox("Are you a Disabled Employee? (Special Conveyance)")
 
-# پروفیشنل اور حقیقت پسندانہ خودکار حساب (موجودہ بیسک میں پوائنٹ ٹو پوائنٹ یا تخمینہ اضافہ)
+# پروفیشنل اور حقیقت پسندانہ خودکار حساب
 revised_basic = existing_basic * 1.201
 
 adhoc_2022_15 = 3615.00
@@ -37,7 +39,18 @@ else:
     conv_label = f"Conveyance Allowance (BPS {bps_grade})"
 
 house_rent = 3524.00
-personal_allowance = 1580.00
+special_allow_20% = 0.00
+
+# اگر کنٹریکٹ ملازم ہو تو 30% SSB الاؤنس کا حساب
+if emp_type == "Contract Employee":
+    ssb_allowance_exist = existing_basic * 0.30
+    ssb_allowance_revised = revised_basic * 0.30
+    ssb_label = "SSB Allowance (30% of Basic)"
+else:
+    ssb_allowance_exist = 0.00
+    ssb_allowance_revised = 0.00
+    ssb_label = "SSB Allowance (N/A for Regular)"
+
 special_allow_2021 = 4030.00
 special_all_15_22 = 3615.00
 adhoc_2023 = 13223.00
@@ -46,11 +59,11 @@ medical_allowance = 1500.00
 
 # ٹوٹل گراس پے کا حساب
 total_existing = (existing_basic + adhoc_2022_15 + adhoc_2025_10 + special_conv_exist + 
-                  house_rent + personal_allowance + special_allow_2021 + special_all_15_22 + 
+                  house_rent + personal_allowance + ssb_allowance_exist + special_allow_2021 + special_all_15_22 + 
                   adhoc_2023 + adhoc_2024 + medical_allowance)
 
 total_revised = (revised_basic + adhoc_2026_new + special_conv_revised + 
-                 house_rent + personal_allowance + special_allow_2021 + special_all_15_22 + 
+                 house_rent + personal_allowance + ssb_allowance_revised + special_allow_2021 + special_all_15_22 + 
                  adhoc_2023 + adhoc_2024 + medical_allowance)
 
 diff_total = total_revised - total_existing
@@ -65,6 +78,7 @@ data_gross = {
         conv_label,
         "House Rent Allowance 45%",
         "Personal Allowance",
+        ssb_label,
         "Special Allow 2021 25%",
         "Special All 15% 22 (PS17)",
         "Adhoc Relief 2023 (35% Frozen)",
@@ -80,6 +94,7 @@ data_gross = {
         f"Rs. {special_conv_exist:,.2f}",
         f"Rs. {house_rent:,.2f}",
         f"Rs. {personal_allowance:,.2f}",
+        f"Rs. {ssb_allowance_exist:,.2f}",
         f"Rs. {special_allow_2021:,.2f}",
         f"Rs. {special_all_15_22:,.2f}",
         f"Rs. {adhoc_2023:,.2f}",
@@ -93,7 +108,9 @@ data_gross = {
         f"- Rs. {adhoc_2025_10:,.2f}",
         f"+ Rs. {adhoc_2026_new:,.2f}",
         f"+ Rs. {special_conv_revised - special_conv_exist:,.2f}",
-        "Rs. 0.00", "Rs. 0.00", "Rs. 0.00", "Rs. 0.00", "Rs. 0.00", "Rs. 0.00", "Rs. 0.00",
+        "Rs. 0.00", "Rs. 0.00", 
+        f"+ Rs. {ssb_allowance_revised - ssb_allowance_exist:,.2f}", 
+        "Rs. 0.00", "Rs. 0.00", "Rs. 0.00", "Rs. 0.00", "Rs. 0.00",
         f"+ Rs. {diff_total:,.2f}"
     ],
     "Revised Pay (BPS-2026)": [
@@ -104,6 +121,7 @@ data_gross = {
         f"Rs. {special_conv_revised:,.2f}",
         f"Rs. {house_rent:,.2f}",
         f"Rs. {personal_allowance:,.2f}",
+        f"Rs. {ssb_allowance_revised:,.2f}",
         f"Rs. {special_allow_2021:,.2f}",
         f"Rs. {special_all_15_22:,.2f}",
         f"Rs. {adhoc_2023:,.2f}",
@@ -119,7 +137,7 @@ st.table(df_gross)
 
 # کٹوتیاں (Deductions) الگ سے ظاہر کرنا
 income_tax = 461.00
-gp_fund = 4290.00
+gp_fund = 4290.00 if emp_type == "Regular Employee" else 0.00 # کنٹریکٹ کے لیے GP Fund عام طور پر نہیں ہوتا
 benevolent_fund = 1312.00
 group_insurance = 149.00
 total_deductions = income_tax + gp_fund + benevolent_fund + group_insurance
@@ -160,8 +178,8 @@ st.table(df_net)
 
 # ہائی لائٹس
 st.markdown("### Key Highlights:")
-st.markdown(f"- **Selected Grade & Stage:** BPS-{bps_grade}, Stage {stage_no} | **Disability Status:** {'Yes (Special Conveyance Rs. 10,000)' if is_disabled else 'No'}")
-st.markdown("- **Basic Pay Scale Revision:** Adhoc Relief 2022 (15%) and 2025 (10%) are successfully merged into Basic Pay Scales.")
+st.markdown(f"- **Employment Type:** {emp_type} | **Grade & Stage:** BPS-{bps_grade}, Stage {stage_no}")
+st.markdown(f"- **Disability Status:** {'Yes (Special Conveyance Rs. 10,000)' if is_disabled else 'No'}")
 st.markdown(f"- **Net Take-Home Monthly Increase:** + Rs. {net_diff:,.2f}")
 
 st.markdown("---")
