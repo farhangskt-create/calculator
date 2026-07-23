@@ -19,8 +19,7 @@ with st.form("pay_input_form"):
     with col2:
         existing_basic = st.number_input("Enter Existing Basic Pay (June 2026):", min_value=0.0, value=43720.00, format="%.2f")
         personal_allowance = st.number_input("Enter Personal Allowance:", min_value=0.0, value=1580.00, format="%.2f")
-        # یہاں ویلیو False کر دی گئی ہے تاکہ نارمل ملازمین کے لیے اسپیشل الاؤنس نہ آئے
-        is_disabled = st.checkbox("Are you a Disabled Employee? (Special Conveyance)", value=False)
+        is_disabled = st.checkbox("Are you a Disabled Employee? (Get Both Normal & Special Conveyance)", value=False)
 
     # فارم کے اندر سبمٹ بٹن
     submitted = st.form_submit_button("Calculate & Show Statement", type="primary")
@@ -34,21 +33,23 @@ if submitted:
     adhoc_2025_10 = 4372.00
     adhoc_2026_new = revised_basic * 0.07
 
-    # گریڈ اور ڈس ایبلٹی کے حساب سے درست کنویئنس الاؤنس
+    # 1. نارمل کنویئنس الاؤنس (گریڈ کے حساب سے)
+    if bps_grade <= 4:
+        norm_conv_exist, norm_conv_revised = 1785.00, 2678.00
+    elif bps_grade <= 10:
+        norm_conv_exist, norm_conv_revised = 1932.00, 2898.00
+    elif bps_grade <= 15:
+        norm_conv_exist, norm_conv_revised = 2856.00, 4284.00
+    else:
+        norm_conv_exist, norm_conv_revised = 5000.00, 7500.00
+
+    # 2. اگر معذور ہو تو اسپیشل کنویئنس الاؤنس بھی شامل ہوگا
     if is_disabled:
         special_conv_exist = 6000.00
         special_conv_revised = 10000.00
-        conv_label = "Special Conveyance Allowance (Disabled)"
     else:
-        if bps_grade <= 4:
-            special_conv_exist, special_conv_revised = 1785.00, 2678.00
-        elif bps_grade <= 10:
-            special_conv_exist, special_conv_revised = 1932.00, 2898.00
-        elif bps_grade <= 15:
-            special_conv_exist, special_conv_revised = 2856.00, 4284.00
-        else:
-            special_conv_exist, special_conv_revised = 5000.00, 7500.00
-        conv_label = f"Conveyance Allowance (BPS {bps_grade})"
+        special_conv_exist = 0.00
+        special_conv_revised = 0.00
 
     house_rent = 3524.00
 
@@ -68,78 +69,86 @@ if submitted:
     adhoc_2024 = 10930.00
     medical_allowance = 1500.00
 
+    # فہرست اور نام جنریٹ کرنا
+    allowance_details_list = [
+        f"Basic Pay (BPS-{bps_grade} Stage {stage_no})",
+        "Adhoc Relief 2022 (15%)",
+        "Adhoc Relief 2025 (10%)",
+        "Adhoc Relief 2026 (7% New)",
+        f"Conveyance Allowance (BPS {bps_grade})"
+    ]
+    
+    existing_pay_list = [
+        f"Rs. {existing_basic:,.2f}",
+        f"Rs. {adhoc_2022_15:,.2f}",
+        f"Rs. {adhoc_2025_10:,.2f}",
+        "Rs. 0.00",
+        f"Rs. {norm_conv_exist:,.2f}"
+    ]
+    
+    diff_list = [
+        f"+ Rs. {revised_basic - existing_basic:,.2f}",
+        f"- Rs. {adhoc_2022_15:,.2f}",
+        f"- Rs. {adhoc_2025_10:,.2f}",
+        f"+ Rs. {adhoc_2026_new:,.2f}",
+        f"+ Rs. {norm_conv_revised - norm_conv_exist:,.2f}"
+    ]
+    
+    revised_pay_list = [
+        f"Rs. {revised_basic:,.2f}",
+        "Rs. 0 (Merged)",
+        "Rs. 0 (Merged)",
+        f"Rs. {adhoc_2026_new:,.2f}",
+        f"Rs. {norm_conv_revised:,.2f}"
+    ]
+
+    # اگر معذور ہے تو اسپیشل کنویئنس الاؤنس کو الگ سے قطار میں جوڑ دیں
+    if is_disabled:
+        allowance_details_list.append("Special Conveyance Allowance (Disabled)")
+        existing_pay_list.append(f"Rs. {special_conv_exist:,.2f}")
+        diff_list.append(f"+ Rs. {special_conv_revised - special_conv_exist:,.2f}")
+        revised_pay_list.append(f"Rs. {special_conv_revised:,.2f}")
+
+    # باقی تمام الاؤنسز شامل کرنا
+    other_items = [
+        ("House Rent Allowance 45%", f"Rs. {house_rent:,.2f}", "Rs. 0.00", f"Rs. {house_rent:,.2f}"),
+        ("Personal Allowance", f"Rs. {personal_allowance:,.2f}", "Rs. 0.00", f"Rs. {personal_allowance:,.2f}"),
+        (ssb_label, f"Rs. {ssb_allowance_exist:,.2f}", f"+ Rs. {ssb_allowance_revised - ssb_allowance_exist:,.2f}", f"Rs. {ssb_allowance_revised:,.2f}"),
+        ("Special Allow 2021 25%", f"Rs. {special_allow_2021:,.2f}", "Rs. 0.00", f"Rs. {special_allow_2021:,.2f}"),
+        ("Special All 15% 22 (PS17)", f"Rs. {special_all_15_22:,.2f}", "Rs. 0.00", f"Rs. {special_all_15_22:,.2f}"),
+        ("Adhoc Relief 2023 (35% Frozen)", f"Rs. {adhoc_2023:,.2f}", "Rs. 0.00", f"Rs. {adhoc_2023:,.2f}"),
+        ("Adhoc Relief 2024 (25% Frozen)", f"Rs. {adhoc_2024:,.2f}", "Rs. 0.00", f"Rs. {adhoc_2024:,.2f}"),
+        ("Medical Allowance", f"Rs. {medical_allowance:,.2f}", "Rs. 0.00", f"Rs. {medical_allowance:,.2f}")
+    ]
+
+    for name, ex_val, df_val, rev_val in other_items:
+        allowance_details_list.append(name)
+        existing_pay_list.append(ex_val)
+        diff_list.append(df_val)
+        revised_pay_list.append(rev_val)
+
     # ٹوٹل گراس پے کا حساب
-    total_existing = (existing_basic + adhoc_2022_15 + adhoc_2025_10 + special_conv_exist + 
+    total_existing = (existing_basic + adhoc_2022_15 + adhoc_2025_10 + norm_conv_exist + special_conv_exist + 
                       house_rent + personal_allowance + ssb_allowance_exist + special_allow_2021 + special_all_15_22 + 
                       adhoc_2023 + adhoc_2024 + medical_allowance)
 
-    total_revised = (revised_basic + adhoc_2026_new + special_conv_revised + 
+    total_revised = (revised_basic + adhoc_2026_new + norm_conv_revised + special_conv_revised + 
                      house_rent + personal_allowance + ssb_allowance_revised + special_allow_2021 + special_all_15_22 + 
                      adhoc_2023 + adhoc_2024 + medical_allowance)
 
     diff_total = total_revised - total_existing
 
+    allowance_details_list.append("TOTAL GROSS PAY")
+    existing_pay_list.append(f"Rs. {total_existing:,.2f}")
+    diff_list.append(f"+ Rs. {diff_total:,.2f}")
+    revised_pay_list.append(f"Rs. {total_revised:,.2f}")
+
     # گراس پے کا موازنہ ٹیبل
     data_gross = {
-        "Pay & Allowances Details": [
-            f"Basic Pay (BPS-{bps_grade} Stage {stage_no})",
-            "Adhoc Relief 2022 (15%)",
-            "Adhoc Relief 2025 (10%)",
-            "Adhoc Relief 2026 (7% New)",
-            conv_label,
-            "House Rent Allowance 45%",
-            "Personal Allowance",
-            ssb_label,
-            "Special Allow 2021 25%",
-            "Special All 15% 22 (PS17)",
-            "Adhoc Relief 2023 (35% Frozen)",
-            "Adhoc Relief 2024 (25% Frozen)",
-            "Medical Allowance",
-            "TOTAL GROSS PAY"
-        ],
-        "Existing Pay (June 2026)": [
-            f"Rs. {existing_basic:,.2f}",
-            f"Rs. {adhoc_2022_15:,.2f}",
-            f"Rs. {adhoc_2025_10:,.2f}",
-            "Rs. 0.00",
-            f"Rs. {special_conv_exist:,.2f}",
-            f"Rs. {house_rent:,.2f}",
-            f"Rs. {personal_allowance:,.2f}",
-            f"Rs. {ssb_allowance_exist:,.2f}",
-            f"Rs. {special_allow_2021:,.2f}",
-            f"Rs. {special_all_15_22:,.2f}",
-            f"Rs. {adhoc_2023:,.2f}",
-            f"Rs. {adhoc_2024:,.2f}",
-            f"Rs. {medical_allowance:,.2f}",
-            f"Rs. {total_existing:,.2f}"
-        ],
-        "Difference (Change)": [
-            f"+ Rs. {revised_basic - existing_basic:,.2f}",
-            f"- Rs. {adhoc_2022_15:,.2f}",
-            f"- Rs. {adhoc_2025_10:,.2f}",
-            f"+ Rs. {adhoc_2026_new:,.2f}",
-            f"+ Rs. {special_conv_revised - special_conv_exist:,.2f}",
-            "Rs. 0.00", "Rs. 0.00", 
-            f"+ Rs. {ssb_allowance_revised - ssb_allowance_exist:,.2f}", 
-            "Rs. 0.00", "Rs. 0.00", "Rs. 0.00", "Rs. 0.00", "Rs. 0.00",
-            f"+ Rs. {diff_total:,.2f}"
-        ],
-        "Revised Pay (BPS-2026)": [
-            f"Rs. {revised_basic:,.2f}",
-            "Rs. 0 (Merged)",
-            "Rs. 0 (Merged)",
-            f"Rs. {adhoc_2026_new:,.2f}",
-            f"Rs. {special_conv_revised:,.2f}",
-            f"Rs. {house_rent:,.2f}",
-            f"Rs. {personal_allowance:,.2f}",
-            f"Rs. {ssb_allowance_revised:,.2f}",
-            f"Rs. {special_allow_2021:,.2f}",
-            f"Rs. {special_all_15_22:,.2f}",
-            f"Rs. {adhoc_2023:,.2f}",
-            f"Rs. {adhoc_2024:,.2f}",
-            f"Rs. {medical_allowance:,.2f}",
-            f"Rs. {total_revised:,.2f}"
-        ]
+        "Pay & Allowances Details": allowance_details_list,
+        "Existing Pay (June 2026)": existing_pay_list,
+        "Difference (Change)": diff_list,
+        "Revised Pay (BPS-2026)": revised_pay_list
     }
 
     st.subheader("1. Gross Pay Comparison")
@@ -221,7 +230,7 @@ if submitted:
     # ہائی لائٹس
     st.markdown("### Key Highlights:")
     st.markdown(f"- **Employment Type:** {emp_type} | **Grade & Stage:** BPS-{bps_grade}, Stage {stage_no}")
-    st.markdown(f"- **Conveyance Allowance:** Rs. {special_conv_revised:,.2f}")
+    st.markdown(f"- **Conveyance Allowance:** Rs. {norm_conv_revised:,.2f} {'+ Special Conveyance Rs. 10,000' if is_disabled else ''}")
     st.markdown(f"- **Benevolent Fund Rate:** {'1% (Grade 1-4)' if bps_grade <= 4 else '2% (Grade 5+)'} = Rs. {benevolent_fund:,.2f}")
     st.markdown(f"- **FBR Monthly Income Tax:** Rs. {monthly_income_tax:,.2f}")
     st.markdown(f"- **Net Take-Home Monthly Increase:** + Rs. {net_diff:,.2f}")
