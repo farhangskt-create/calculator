@@ -33,11 +33,11 @@ if submitted:
     adhoc_2025_10 = 4372.00
     adhoc_2026_new = revised_basic * 0.07
 
-    # کنویئنس الاؤنس کا حساب
+    # گریڈ اور ڈس ایبلٹی کے حساب سے درست کنویئنس الاؤنس
     if is_disabled:
         special_conv_exist = 6000.00
         special_conv_revised = 10000.00
-        conv_label = "Special Conveyance Allowance"
+        conv_label = "Special Conveyance Allowance (Disabled)"
     else:
         if bps_grade <= 4:
             special_conv_exist, special_conv_revised = 1785.00, 2678.00
@@ -153,10 +153,10 @@ if submitted:
     else:
         benevolent_fund = revised_basic * 0.02
 
-    # 2. GP Fund (Only for regular employees, estimated standard deduction or percentage)
+    # 2. GP Fund (Only for regular employees)
     gp_fund = (revised_basic * 0.10) if emp_type == "Regular Employee" else 0.00
     
-    # 3. Group Insurance (Fixed standard slab)
+    # 3. Group Insurance
     group_insurance = 149.00
 
     # 4. FBR Income Tax Slabs for Salaried Individuals (Budget 2026-27)
@@ -220,6 +220,7 @@ if submitted:
     # ہائی لائٹس
     st.markdown("### Key Highlights:")
     st.markdown(f"- **Employment Type:** {emp_type} | **Grade & Stage:** BPS-{bps_grade}, Stage {stage_no}")
+    st.markdown(f"- **Conveyance Allowance:** Rs. {special_conv_revised:,.2f}")
     st.markdown(f"- **Benevolent Fund Rate:** {'1% (Grade 1-4)' if bps_grade <= 4 else '2% (Grade 5+)'} = Rs. {benevolent_fund:,.2f}")
     st.markdown(f"- **FBR Monthly Income Tax:** Rs. {monthly_income_tax:,.2f}")
     st.markdown(f"- **Net Take-Home Monthly Increase:** + Rs. {net_diff:,.2f}")
