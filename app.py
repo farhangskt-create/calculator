@@ -251,3 +251,4 @@ st.markdown("""
         <p style='margin: 8px 0 0 0; font-size: 18px; color: #2c3e50;'><b>BY M. FARHAN IQBAL</b></p>
     </div>
 """, unsafe_allow_html=True)
+    
