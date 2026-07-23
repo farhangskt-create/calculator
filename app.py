@@ -6,20 +6,26 @@ st.set_page_config(page_title="Punjab Pay & Allowances Comparison Statement", pa
 st.markdown("<h2 style='text-align: center;'>PAY & ALLOWANCES COMPARISON STATEMENT</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'><b>Government of the Punjab - Revised Basic Pay Scales 2026</b></p>", unsafe_allow_html=True)
 
-# سائیڈ بار ان پٹس
-st.sidebar.header("Employee Pay Inputs")
-emp_type = st.sidebar.selectbox("Employment Type:", ["Regular Employee", "Contract Employee"])
-bps_grade = st.sidebar.selectbox("Select BPS Grade:", list(range(1, 23)), index=14) # ڈیفالٹ BPS-15
-stage_no = st.sidebar.number_input("Enter Stage No:", min_value=1, max_value=30, value=10)
-existing_basic = st.sidebar.number_input("Enter Existing Basic Pay (June 2026):", min_value=0.0, value=43720.00, format="%.2f")
-personal_allowance = st.sidebar.number_input("Enter Personal Allowance:", min_value=0.0, value=1580.00, format="%.2f")
-is_disabled = st.sidebar.checkbox("Are you a Disabled Employee? (Special Conveyance)")
+# مین اسکرین پر فارم بنانے کے لیے st.form کا استعمال
+with st.form("pay_input_form"):
+    st.subheader("📝 Enter Employee Details")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        emp_type = st.selectbox("Employment Type:", ["Regular Employee", "Contract Employee"])
+        bps_grade = st.selectbox("Select BPS Grade:", list(range(1, 23)), index=14) # ڈیفالٹ BPS-15
+        stage_no = st.number_input("Enter Stage No:", min_value=1, max_value=30, value=10)
+    
+    with col2:
+        existing_basic = st.number_input("Enter Existing Basic Pay (June 2026):", min_value=0.0, value=43720.00, format="%.2f")
+        personal_allowance = st.number_input("Enter Personal Allowance:", min_value=0.0, value=1580.00, format="%.2f")
+        is_disabled = st.checkbox("Are you a Disabled Employee? (Special Conveyance)")
 
-# کیلکولیٹ کرنے کا بٹن
-calculate_btn = st.sidebar.button("Calculate & Generate Statement", type="primary")
+    # فارم کے اندر سبمٹ بٹن
+    submitted = st.form_submit_button("Calculate & Show Statement", type="primary")
 
 # جب تک بٹن نہ دبایا جائے، نیچے کی تفصیلات ظاہر نہ ہوں
-if calculate_btn:
+if submitted:
     # پروفیشنل اور حقیقت پسندانہ خودکار حساب
     revised_basic = existing_basic * 1.201
 
@@ -189,9 +195,9 @@ if calculate_btn:
     st.markdown("---")
 
 else:
-    st.info("👈 براہ کرم سائیڈ بار میں اپنی معلومات درج کرنے کے بعد **'Calculate & Generate Statement'** کے بٹن پر کلک کریں تاکہ تنخواہ کا تفصیلی موازنہ اور اسٹیٹمنٹ ظاہر ہو سکے۔")
+    st.info("👆 اوپر دیے گئے فارم میں اپنی معلومات درج کرنے کے بعد **'Calculate & Show Statement'** کے بٹن پر کلک کریں تاکہ تنخواہ کا تفصیلی موازنہ ظاہر ہو سکے۔")
 
-# ایپ شیئرنگ اور کیو آر کوڈ سیکشن (ہمیشہ نیچے شو ہوگا)
+# ایپ شیئرنگ اور کیو آر کوڈ سیکشن
 st.subheader("📱 Share This App with Friends & Colleagues")
 app_url = "https://salary-calculator-by-farhan.streamlit.app/"
 qr_code_url = f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={app_url}"
