@@ -6,13 +6,14 @@ st.set_page_config(page_title="Punjab Pay & Allowances Comparison Statement", pa
 st.markdown("<h2 style='text-align: center;'>PAY & ALLOWANCES COMPARISON STATEMENT</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'><b>Government of the Punjab - Revised Basic Pay Scales 2026</b></p>", unsafe_allow_html=True)
 
-# پے سلپ کے مطابق فکسڈ ڈیٹا (BPS-15, Stage 10)
-existing_basic = 43720.00
-revised_basic = 52530.00  # BPS-2026 کے نئے اسکیل کے مطابق
+# سائیڈ بار میں ان پٹس تاکہ یوزر اپنی مرضی سے ایڈٹ کر سکے
+st.sidebar.header("Employee Pay Inputs")
+existing_basic = st.sidebar.number_input("Existing Basic Pay (June 2026):", min_value=0.0, value=43720.00, format="%.2f")
+revised_basic = st.sidebar.number_input("Revised Basic Pay (BPS-2026):", min_value=0.0, value=52530.00, format="%.2f")
 
 adhoc_2022_15 = 3615.00
 adhoc_2025_10 = 4372.00
-adhoc_2026_new = 3677.00  # نئے اسکیل کا 7%
+adhoc_2026_new = revised_basic * 0.07  # نئے اسکیل کا 7%
 
 special_conv_exist = 6000.00
 special_conv_revised = 10000.00
@@ -36,7 +37,7 @@ total_revised = (revised_basic + 0.0 + 0.0 + adhoc_2026_new + special_conv_revis
 
 diff_total = total_revised - total_existing
 
-# ڈیٹا ٹیبل تیار کرنا (بالکل آپ کی پے سلپ اور کمپیریزن اسٹیٹمنٹ کے مطابق)
+# ڈیٹا ٹیبل تیار کرنا
 data = {
     "Pay & Allowances Details": [
         "Basic Pay (BPS-15 Stage 10)",
@@ -106,3 +107,7 @@ st.markdown(f"- **Net Gross Monthly Increase:** + Rs. {diff_total:,.2f}")
 
 st.markdown("---")
 st.info("📌 **Note:** Actual net take-home pay will vary after mandatory deductions including Income Tax (e.g., Rs. 461), GP Fund Subscription (e.g., Rs. 4,290), Benevolent Fund (e.g., Rs. 1,312), Group Insurance (e.g., Rs. 149), and other departmental cuttings as per applicable government rules[cite: 2].")
+
+# آخر میں آپ کا نام اور پیغام
+st.markdown("---")
+st.markdown("<h4 style='text-align: center; color: #2e6c80;'>Wish you best of luck! — <b>From Farhan Iqbal</b></h4>", unsafe_allow_html=True)
