@@ -6,17 +6,33 @@ st.set_page_config(page_title="Punjab Pay & Allowances Comparison Statement", pa
 st.markdown("<h2 style='text-align: center;'>PAY & ALLOWANCES COMPARISON STATEMENT</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'><b>Government of the Punjab - Revised Basic Pay Scales 2026</b></p>", unsafe_allow_html=True)
 
-# سائیڈ بار میں ان پٹس تاکہ یوزر اپنی مرضی سے ایڈٹ کر سکے
+# سائیڈ بار میں ان پٹس (BPS، اسٹیج، بیسک پے، اور ڈس ایبلٹی کا آپشن)
 st.sidebar.header("Employee Pay Inputs")
-existing_basic = st.sidebar.number_input("Existing Basic Pay (June 2026):", min_value=0.0, value=43720.00, format="%.2f")
-revised_basic = st.sidebar.number_input("Revised Basic Pay (BPS-2026):", min_value=0.0, value=52530.00, format="%.2f")
+bps_grade = st.sidebar.selectbox("Select BPS Grade:", list(range(1, 23)), index=14) # ڈیفالٹ BPS-15
+stage_no = st.sidebar.number_input("Enter Stage No:", min_value=1, max_value=30, value=10)
+existing_basic = st.sidebar.number_input("Enter Existing Basic Pay (June 2026):", min_value=0.0, value=43720.00, format="%.2f")
+revised_basic = st.sidebar.number_input("Enter Revised Basic Pay (BPS-2026):", min_value=0.0, value=52530.00, format="%.2f")
+is_disabled = st.sidebar.checkbox("Are you a Disabled Employee? (Special Conveyance)")
 
 adhoc_2022_15 = 3615.00
 adhoc_2025_10 = 4372.00
 adhoc_2026_new = revised_basic * 0.07  # نئے اسکیل کا 7%
 
-special_conv_exist = 6000.00
-special_conv_revised = 10000.00
+# کنویئنس الاؤنس کا حساب ڈس ایبلٹی کے لحاظ سے
+if is_disabled:
+    special_conv_exist = 6000.00
+    special_conv_revised = 10000.00  # نوٹیفیکیشن کے مطابق 6000 سے بڑھا کر 10000[cite: 1]
+    conv_label = "Special Conveyance Allowance"
+else:
+    if bps_grade <= 4:
+        special_conv_exist, special_conv_revised = 1785.00, 2678.00
+    elif bps_grade <= 10:
+        special_conv_exist, special_conv_revised = 1932.00, 2898.00
+    elif bps_grade <= 15:
+        special_conv_exist, special_conv_revised = 2856.00, 4284.00
+    else:
+        special_conv_exist, special_conv_revised = 5000.00, 7500.00
+    conv_label = f"Conveyance Allowance (BPS {bps_grade})"
 
 house_rent = 3524.00
 personal_allowance = 1580.00
@@ -27,11 +43,11 @@ adhoc_2024 = 10930.00
 medical_allowance = 1500.00
 
 # ٹوٹل گراس پے کا حساب
-total_existing = (existing_basic + adhoc_2022_15 + adhoc_2025_10 + 0.0 + special_conv_exist + 
+total_existing = (existing_basic + adhoc_2022_15 + adhoc_2025_10 + special_conv_exist + 
                   house_rent + personal_allowance + special_allow_2021 + special_all_15_22 + 
                   adhoc_2023 + adhoc_2024 + medical_allowance)
 
-total_revised = (revised_basic + 0.0 + 0.0 + adhoc_2026_new + special_conv_revised + 
+total_revised = (revised_basic + adhoc_2026_new + special_conv_revised + 
                  house_rent + personal_allowance + special_allow_2021 + special_all_15_22 + 
                  adhoc_2023 + adhoc_2024 + medical_allowance)
 
@@ -40,11 +56,11 @@ diff_total = total_revised - total_existing
 # ڈیٹا ٹیبل تیار کرنا
 data = {
     "Pay & Allowances Details": [
-        "Basic Pay (BPS-15 Stage 10)",
+        f"Basic Pay (BPS-{bps_grade} Stage {stage_no})",
         "Adhoc Relief 2022 (15%)",
         "Adhoc Relief 2025 (10%)",
         "Adhoc Relief 2026 (7% New)",
-        "Special Conveyance Allowance",
+        conv_label,
         "House Rent Allowance 45%",
         "Personal Allowance",
         "Special Allow 2021 25%",
@@ -100,9 +116,9 @@ st.table(df)
 
 # ہائی لائٹس
 st.markdown("### Key Highlights:")
+st.markdown(f"- **Selected Grade & Stage:** BPS-{bps_grade}, Stage {stage_no} | **Disability Status:** {'Yes (Special Conveyance Rs. 10,000)' if is_disabled else 'No'}[cite: 1]")
 st.markdown("- **Basic Pay Scale Revision:** Adhoc Relief 2022 (15%) and 2025 (10%) are merged into Basic Pay Scales 2026[cite: 1].")
 st.markdown("- **New Allowance:** Adhoc Relief Allowance 2026 @ 7% introduced on running New Basic Pay[cite: 1].")
-st.markdown("- **Special Conveyance:** Enhanced from Rs. 6,000 to Rs. 10,000 for disabled employees[cite: 1].")
 st.markdown(f"- **Net Gross Monthly Increase:** + Rs. {diff_total:,.2f}")
 
 st.markdown("---")
